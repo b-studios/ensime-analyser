@@ -1,0 +1,27 @@
+branches:
+  only:
+    - master
+language: scala
+jdk:
+  - openjdk6
+scala:
+  - 2.11.5
+sudo: false
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+addons:
+  apt_packages:
+  # https://github.com/travis-ci/apt-package-whitelist
+  - openjdk-6-source
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION clean test:compile doc && ./.check-diff.sh && sbt ++$TRAVIS_SCALA_VERSION test && sbt ++$TRAVIS_SCALA_VERSION clean coverage test
+after_success:
+  - sbt ++$TRAVIS_SCALA_VERSION coveralls
+  - sbt ++$TRAVIS_SCALA_VERSION clean $(if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then echo "publish"; fi)
+env:
+  global:
+    # travis encrypt -r ensime/ensime-analyser SONATYPE_USERNAME=<USERNAME>
+    # travis encrypt -r ensime/ensime-analyser SONATYPE_PASSWORD=<PASSWORD>
+    - secure: "IqDHZwYDAdif+BAJ0u57Ci7UEp4k0y8D+uDh51g6FqAIybD1HZ6TINojwj79675mjFaA9szXARkGAEuPfQ57tpC8Bevaj0zKX64TBE3HEdzuQL3i7dxi13DFEmCsUFeS7zqSMsqFcz5a6yASRujttDt2x0GCakOp82TvgI4NANM="
+    - secure: "R90/HAOWcNEcs7CLx0ID/qLKBS9EC8Z52c9EPsmIx7dTWXGAOmbj7klUbWjkMsa/SkDYrfBTSPPsdW2QBY66pU8NeqL2YiguKNTVrOoFclEj/kfejQqJcII1PwwSBhVBXhp+bQ+ZHHe8MySDehK7hedL1fNzc8+RpLSUe2ROd90="
