@@ -6,11 +6,14 @@ import akka.actor.ActorSystem
 import com.google.common.base.Charsets
 import com.google.common.io.Files
 import org.ensime.EnsimeApi
-import org.ensime.config.{Environment, EnsimeConfig}
+import org.ensime.config.{ EnsimeConfigProtocol, Environment, EnsimeConfig }
+import scala.concurrent.duration._
 import org.ensime.core.Project
-import org.ensime.model.{BasicTypeInfo, PackageInfo}
+import org.ensime.model.{ BasicTypeInfo, PackageInfo }
 import org.slf4j.LoggerFactory
 import org.slf4j.bridge.SLF4JBridgeHandler
+
+import scala.concurrent.Await
 
 /**
  * Entry point for an example analysis tool.
@@ -23,23 +26,23 @@ object AnalysisMain {
   val log = LoggerFactory.getLogger("AnalysisMain")
 
   def main(args: Array[String]): Unit = {
-    if(args.length < 1 && args.length > 2)
+    if (args.length < 1 && args.length > 2)
       throw new RuntimeException("Usage: AnalysisMain <.ensime_path> <opt:base_package>")
 
     val ensimeFile = new File(args(0))
     if (!ensimeFile.exists() || !ensimeFile.isFile)
       throw new RuntimeException(s".ensime file ($ensimeFile) not found")
 
-    val basePackage = if(args.length == 2) args(1) else ""
+    val basePackage = if (args.length == 2) args(1) else ""
 
-    val config = EnsimeConfig.parse(Files.toString(ensimeFile, Charsets.UTF_8))
+    val config = EnsimeConfigProtocol.parse(Files.toString(ensimeFile, Charsets.UTF_8))
 
     val api = startEnsime(config)
 
     try {
       runAnalysis(api, basePackage)
     } finally {
-      api.rpcShutdownServer()
+      api.shutdown()
     }
   }
 
@@ -50,10 +53,8 @@ object AnalysisMain {
     val actorSystem = ActorSystem.create()
     log.info(Environment.info)
 
-    val project = new Project(config, actorSystem)
-    project.initProject()
-    // sleep to allow project time to initialise and we do not  have a clean way to wait for it to be ready right now.
-    Thread.sleep(20000)
+    val project = new Project(config, actorSystem, None)
+    Await.ready(project.initProject(), 120.seconds)
     project
   }
 
@@ -70,7 +71,7 @@ object AnalysisMain {
 
     val subTypes = p.members.filter(_.isInstanceOf[BasicTypeInfo])
     subTypes.foreach { st =>
-      dumpType(st.asInstanceOf[BasicTypeInfo], spacer)
+      dumpType(st.asInstanceOf[BasicTypeInfo], spacer + "  ")
     }
     val subPackages = p.members.filter(_.isInstanceOf[PackageInfo])
 
@@ -82,7 +83,7 @@ object AnalysisMain {
   def dumpType(b: BasicTypeInfo, spacer: String = "  ")(implicit api: EnsimeApi): Unit = {
     val typeInfo = api.rpcInspectTypeById(b.typeId).get
     println(s"C$spacer${b.fullName} (${typeInfo.`type`.pos})")
-    if(typeInfo.`type`.typeArgs.nonEmpty)
+    if (typeInfo.`type`.typeArgs.nonEmpty)
       println(s" $spacer typeArgs: ${b.typeArgs}")
     typeInfo.`type`.members.foreach { m =>
       println(s" $spacer  $m")

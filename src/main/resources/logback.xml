@@ -14,7 +14,7 @@
   
   <logger name="org.ensime" level="INFO"/>
   <logger name="scala.tools" level="WARN"/>
-  <!-- <logger name="org.ensime.server.RichPresentationCompiler" level="WARN"/> -->
+  <logger name="org.ensime.server.RichPresentationCompiler" level="WARN"/>
   
   <root level="INFO">
     <appender-ref ref="STDOUT" />
