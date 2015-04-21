@@ -16,7 +16,7 @@ version := "0.1-SNAPSHOT"
 resolvers += Resolver.sonatypeRepo("snapshots")
 
 libraryDependencies ++= Seq(
-  "org.ensime"                 %% "ensime"               % "0.10-SNAPSHOT",
+  "org.ensime"                 %% "ensime"               % "0.9.10-SNAPSHOT",
   "org.slf4j"                  %  "jul-to-slf4j"         % "1.7.9",
   "org.slf4j"                  %  "jcl-over-slf4j"       % "1.7.9",
   "org.mockito"                       %  "mockito-core"                % "1.9.5"         % "test",
@@ -90,7 +90,7 @@ def classDirs(cp: Classpath): String = {
 javaOptions ++= Seq("-XX:MaxPermSize=256m", "-Xmx2g", "-XX:+UseConcMarkSweepGC")
 
 // 0.13.7 introduced awesomely fast resolution caching
-updateOptions := updateOptions.value.withCachedResolution(true)
+// updateOptions := updateOptions.value.withCachedResolution(true)
 
 javaOptions in Test ++= Seq(
   "-XX:MaxPermSize=256m", "-Xmx4g", "-XX:+UseConcMarkSweepGC",

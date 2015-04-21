@@ -42,7 +42,8 @@ object AnalysisMain {
     try {
       runAnalysis(api, basePackage)
     } finally {
-      api.shutdown()
+      // Not available in 0.9.10-SNAPSHOT
+      // api.shutdown()
     }
   }
 
@@ -53,7 +54,7 @@ object AnalysisMain {
     val actorSystem = ActorSystem.create()
     log.info(Environment.info)
 
-    val project = new Project(config, actorSystem, None)
+    val project = new Project(config, actorSystem)
     Await.ready(project.initProject(), 120.seconds)
     project
   }
