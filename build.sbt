@@ -1,6 +1,5 @@
 import sbt._
 import java.io._
-import ScoverageSbtPlugin.ScoverageKeys
 import scala.util.Try
 
 // NOTE: the following skips the slower tests
@@ -110,11 +109,6 @@ javaOptions in Test ++= Seq(
 //testOptions in Test += Tests.Argument("-oF")
 
 scalariformSettings
-
-// let's bump this every time we get more tests
-ScoverageKeys.coverageMinimum := 1
-
-ScoverageKeys.coverageFailOnMinimum := true 
 
 licenses := Seq("BSD 3 Clause" -> url("http://opensource.org/licenses/BSD-3-Clause"))
 
